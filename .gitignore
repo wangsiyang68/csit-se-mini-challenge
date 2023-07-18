@@ -1,0 +1,37 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# dotenv environment variables file
+.env
+.env.test
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.postman_environment.json
+
+# React
+/.pnp
+.pnp.js
+
+# React testing
+/coverage
+
+# React production
+/build
+
+# misc
+.DS_Store
+*.csv
+*.pem
