@@ -55,21 +55,29 @@ const getHotel = async (req, res, next) => {
         const dbo = client.db("minichallenge");
         const hotelNames = await dbo.collection("hotels").distinct("hotelName", {city : destination, date: { $gte: checkInDate, $lte: checkOutDate }});
         const hotels = await dbo.collection("hotels").find({city : destination, date: { $gte: checkInDate, $lte: checkOutDate }}).toArray();
-        // const collection = dbo.collection("hotels");
-        // for (let hotelName of hotelNames) {
-        //     // check if each date in date Range is available for hotelName in the hotels json
-            
-        // }
-        // let hotelName = 'Hotel A'
-        // let selectedHotelListings = hotels.filter(hotel => hotel.hotelName === hotelName)
-        // console.log(checkInDate)
-        // console.log(selectedHotelListings[0].date)
-        // console.log(selectedHotelListings[0].date == checkInDate);
-        // console.log(typeof(checkInDate))
-        // console.log(typeof(selectedHotelListings[0].date))
-        // console.log(selectedHotelListings.find(hotel => hotel.date == checkInDate.toISOString()));
-        // return a subset of collection 
-        res.json(hotelNames);
+
+        // create a json object with key value pair of hotelName and price (default 0)
+        let hotelPrices = {};
+        for (let hotelName of hotelNames) {
+            hotelPrices[hotelName] = 0;
+        }
+
+        for (let eachDate = checkInDate; eachDate <= checkOutDate; eachDate.setDate(eachDate.getDate() + 1)) {
+            hotelToday = hotels.filter(hotel => hotel.date.valueOf() == eachDate.valueOf());
+            console.log(eachDate)
+            console.log(hotelToday.length)
+            // console.log(hotelToday);
+            for (let hotelName of hotelNames) {
+                let selectedHotelToday = hotelToday.filter(hotel => hotel.hotelName === hotelName)
+                if (selectedHotelToday === undefined) { // if hotelName does not exist in hotelToday
+                    hotelNames.splice(hotelNames.indexOf(hotelName), 1); // remove hotelName from hotelNames
+                } else {
+                    console.log(selectedHotelToday.sort((a, b) => a.price - b.price)[0].price)
+                    hotelPrices[hotelName] += selectedHotelToday.sort((a, b) => a.price - b.price)[0].price; // add the lowest price of the day to the hotelName
+                }
+            }
+        }
+        res.json(hotelPrices);
     }
 
     catch (e) {
