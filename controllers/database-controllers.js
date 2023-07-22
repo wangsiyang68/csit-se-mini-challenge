@@ -67,22 +67,34 @@ const getHotel = async (req, res, next) => {
             hotelPrices[hotelName] = 0;
         }
 
+        // loop through each date from checkInDate to checkOutDate
         for (let eachDate = checkInDate; eachDate <= checkOutDate; eachDate.setDate(eachDate.getDate() + 1)) {
             hotelToday = hotels.filter(hotel => hotel.date.valueOf() == eachDate.valueOf());
-            console.log(eachDate)
-            console.log(hotelToday.length)
-            // console.log(hotelToday);
+            
+            // loop through each hotelName in hotelNames, check if it exists in hotelToday list
             for (let hotelName of hotelNames) {
                 let selectedHotelToday = hotelToday.filter(hotel => hotel.hotelName === hotelName)
-                if (selectedHotelToday === undefined) { // if hotelName does not exist in hotelToday
-                    hotelNames.splice(hotelNames.indexOf(hotelName), 1); // remove hotelName from hotelNames
+
+                // if hotelName does not exist in hotelToday
+                if (selectedHotelToday === undefined) { 
+                    // remove hotelName from hotelNames
+                    hotelNames.splice(hotelNames.indexOf(hotelName), 1); 
                 } else {
-                    console.log(selectedHotelToday.sort((a, b) => a.price - b.price)[0].price)
-                    hotelPrices[hotelName] += selectedHotelToday.sort((a, b) => a.price - b.price)[0].price; // add the lowest price of the day to the hotelName
+                    // console.log(selectedHotelToday.sort((a, b) => a.price - b.price)[0].price)
+                    // add the lowest price of the day to the hotelName
+                    hotelPrices[hotelName] += selectedHotelToday.sort((a, b) => a.price - b.price)[0].price; 
                 }
             }
         }
-        res.json(hotelPrices);
+        keyValuePairs = Object.entries(hotelPrices).sort((a, b) => a[1] - b[1]);
+        // res.json(keyValuePairs[0]);
+        res.status(200).json([{
+            "City": destination, 
+            "Check In Date": req.query.checkInDate,
+            "Check Out Date": req.query.checkOutDate,
+            "Hotel": keyValuePairs[0][0],
+            "Price": keyValuePairs[0][1]
+        }]);
     }
 
     catch (e) {
