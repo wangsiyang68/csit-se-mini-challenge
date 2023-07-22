@@ -29,7 +29,13 @@ const controllers = require('./controllers/database-controllers');
 app.get("/flight", controllers.getFlight);
 app.get("/hotel", controllers.getHotel);
 
-const uri = 'mongodb+srv://userReadOnly:7ZT817O8ejDfhnBM@minichallenge.q4nve1r.mongodb.net/';
+app.use((error, req, res, next) => {  //special error checking function, when routes return error
+    if (res.headerSent) {   //check if response has been sent, because can only send 1 response
+        return next(error)
+    }
+    res.status(error.code || 500);
+    res.json({message: error.message || 'An unkown error occured'});
+})
 
 // mongoose
 //     .connect(uri)

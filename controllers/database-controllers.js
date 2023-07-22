@@ -1,5 +1,6 @@
 const {MongoClient} = require('mongodb');
 const Flight = require('../models/flights');
+const HttpError = require('../models/http-error');
 
 const getFlight = async (req, res, next) => {
     const uri = 'mongodb+srv://userReadOnly:7ZT817O8ejDfhnBM@minichallenge.q4nve1r.mongodb.net/';
@@ -25,7 +26,11 @@ const getFlight = async (req, res, next) => {
         const departureResult = await collection.find(departureQuery).project(projection).sort({price: 1}).toArray();
         const returnResult = await collection.find(returnQuery).project(projection).sort({price: 1}).toArray();
 
-        res.json([{
+        if (departureResult.length === 0 || returnResult.length === 0) {
+            return next(new HttpError('Could not find flights for the provided information', 404))
+        }    
+
+        res.status(200).json([{
             "City": destination, 
             "Departure Date": req.query.departureDate,
             "Departure Airline": departureResult[0].airlinename,
