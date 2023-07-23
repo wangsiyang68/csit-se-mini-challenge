@@ -67,6 +67,10 @@ const getHotel = async (req, res, next) => {
             hotelPrices[hotelName] = 0;
         }
 
+        if (hotelNames.length === 0) {
+            return next(new HttpError('Could not find hotels for the provided information', 404))
+        }
+
         // loop through each date from checkInDate to checkOutDate
         for (let eachDate = checkInDate; eachDate <= checkOutDate; eachDate.setDate(eachDate.getDate() + 1)) {
             hotelToday = hotels.filter(hotel => hotel.date.valueOf() == eachDate.valueOf());
@@ -76,7 +80,7 @@ const getHotel = async (req, res, next) => {
                 let selectedHotelToday = hotelToday.filter(hotel => hotel.hotelName === hotelName)
 
                 // if hotelName does not exist in hotelToday
-                if (selectedHotelToday === undefined) { 
+                if (selectedHotelToday.length === 0) { 
                     // remove hotelName from hotelNames
                     hotelNames.splice(hotelNames.indexOf(hotelName), 1); 
                 } else {
@@ -86,6 +90,12 @@ const getHotel = async (req, res, next) => {
                 }
             }
         }
+
+        // Check again because the code above may have removed all hotels from hotelNames
+        if (hotelNames.length === 0) {
+            return next(new HttpError('Could not find hotels for the provided information', 404))
+        }    
+
         keyValuePairs = Object.entries(hotelPrices).sort((a, b) => a[1] - b[1]);
         // res.json(keyValuePairs[0]);
         res.status(200).json([{
