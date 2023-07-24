@@ -1,6 +1,21 @@
 const {MongoClient} = require('mongodb');
 const HttpError = require('../models/http-error');
 
+function isValidDate(dateString) {
+    // source: https://stackoverflow.com/questions/18758772/how-do-i-validate-a-date-in-this-format-yyyy-mm-dd-using-jquery
+    var regEx = /^\d{4}-\d{2}-\d{2}$/;
+    if(!dateString.match(regEx)) return false;  // Invalid format
+    
+    var d = new Date(dateString);
+
+    // check for 0 values in the date (invalid date)
+    var dNum = d.getTime();
+    if(!dNum && dNum !== 0) return false; // NaN value, Invalid date
+    
+    // check for incorrect leap days
+    return d.toISOString().slice(0,10) === dateString;
+  }
+
 const getFlight = async (req, res, next) => {
     const uri = 'mongodb+srv://userReadOnly:7ZT817O8ejDfhnBM@minichallenge.q4nve1r.mongodb.net/';
     const client = new MongoClient(uri);
@@ -11,6 +26,14 @@ const getFlight = async (req, res, next) => {
     const returnDate = new Date(req.query.returnDate);
     
     try {
+        if (req.query.destination == undefined || req.query.departureDate == undefined || req.query.returnDate == undefined){
+            return next(new HttpError("Missing query", 400));
+        }
+
+        if (!isValidDate(req.query.departureDate) || !isValidDate(req.query.returnDate)) {
+            return next(new HttpError("Invalid Date Input", 400));
+        }        
+
         await client.connect();
         const dbo = client.db("minichallenge");
         const collection = dbo.collection("flights");
@@ -57,6 +80,14 @@ const getHotel = async (req, res, next) => {
     destination = req.query.destination;
 
     try {
+        if (req.query.destination == undefined || req.query.checkInDate == undefined || req.query.checkOutDate == undefined){
+            return next(new HttpError("Missing query", 400));
+        }
+
+        if (!isValidDate(req.query.checkInDate) || !isValidDate(req.query.checkOutDate)) {
+            return next(new HttpError("Invalid Date Input", 400));
+        }
+
         await client.connect();
         const dbo = client.db("minichallenge");
         const hotelNames = await dbo.collection("hotels").distinct("hotelName", {city : destination, date: { $gte: checkInDate, $lte: checkOutDate }});
