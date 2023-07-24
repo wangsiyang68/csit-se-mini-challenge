@@ -21,7 +21,7 @@ const getFlight = async (req, res, next) => {
     const client = new MongoClient(uri);
 
     // Get the query parameters from the URL
-    const destination = req.query.destination;    
+    var destination = req.query.destination;    
     const departureDate = new Date(req.query.departureDate);
     const returnDate = new Date(req.query.returnDate);
     
@@ -33,6 +33,12 @@ const getFlight = async (req, res, next) => {
         if (!isValidDate(req.query.departureDate) || !isValidDate(req.query.returnDate)) {
             return next(new HttpError("Invalid Date Input", 400));
         }        
+
+        // convert to format where only first letter of each word is capitalized
+        
+        destination = destination.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+        // https://dba.stackexchange.com/questions/323361/replace-every-character-in-each-word-except-of-first-first-two-charachters
+        destination = destination.replace(/(?<=\w{1})[^\s]/g, letter => letter.toLowerCase());
 
         await client.connect();
         const dbo = client.db("minichallenge");
@@ -75,9 +81,9 @@ const getHotel = async (req, res, next) => {
     const uri = 'mongodb+srv://userReadOnly:7ZT817O8ejDfhnBM@minichallenge.q4nve1r.mongodb.net/';
     const client = new MongoClient(uri);
 
-    checkInDate = new Date(req.query.checkInDate);
-    checkOutDate = new Date(req.query.checkOutDate);
-    destination = req.query.destination;
+    const checkInDate = new Date(req.query.checkInDate);
+    const checkOutDate = new Date(req.query.checkOutDate);
+    var destination = req.query.destination;
 
     try {
         if (req.query.destination == undefined || req.query.checkInDate == undefined || req.query.checkOutDate == undefined){
@@ -87,6 +93,10 @@ const getHotel = async (req, res, next) => {
         if (!isValidDate(req.query.checkInDate) || !isValidDate(req.query.checkOutDate)) {
             return next(new HttpError("Invalid Date Input", 400));
         }
+
+        // convert to format where only first letter of each word is capitalized
+        destination = destination.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+        destination = destination.replace(/(?<=\w{1})[^\s]/g, letter => letter.toLowerCase());
 
         await client.connect();
         const dbo = client.db("minichallenge");
