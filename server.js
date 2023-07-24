@@ -2,7 +2,6 @@
 const express = require('express')
 const morgan = require('morgan')
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 const {MongoClient} = require('mongodb');
 
 /* Express Setup */
@@ -37,11 +36,4 @@ app.use((error, req, res, next) => {  //special error checking function, when ro
     res.json({message: error.message || 'An unkown error occured'});
 })
 
-// mongoose
-//     .connect(uri)
-//     .then(() => {
 app.listen(PORT);
-//     })    
-//     .catch(err => {
-//         console.log(err);
-//     });

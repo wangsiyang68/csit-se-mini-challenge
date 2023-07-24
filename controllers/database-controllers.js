@@ -1,5 +1,4 @@
 const {MongoClient} = require('mongodb');
-const Flight = require('../models/flights');
 const HttpError = require('../models/http-error');
 
 const getFlight = async (req, res, next) => {
@@ -27,18 +26,20 @@ const getFlight = async (req, res, next) => {
         const returnResult = await collection.find(returnQuery).project(projection).sort({price: 1}).toArray();
 
         if (departureResult.length === 0 || returnResult.length === 0) {
-            return next(new HttpError('Could not find flights for the provided information', 404))
+            // return next(new HttpError('Request failed with status code', 404))
+            res.status(200).json([])
         }    
-
-        res.status(200).json([{
-            "City": destination, 
-            "Departure Date": req.query.departureDate,
-            "Departure Airline": departureResult[0].airlinename,
-            "Departure Price": departureResult[0].price,
-            "Return Date": req.query.returnDate,
-            "Return Airline": returnResult[0].airlinename,
-            "Return Price": returnResult[0].price
-        }]);
+        else {
+            res.status(200).json([{
+                "City": destination, 
+                "Departure Date": req.query.departureDate,
+                "Departure Airline": departureResult[0].airlinename,
+                "Departure Price": departureResult[0].price,
+                "Return Date": req.query.returnDate,
+                "Return Airline": returnResult[0].airlinename,
+                "Return Price": returnResult[0].price
+            }]);
+        }
     }
     catch (e) {
         console.error(e);
@@ -68,7 +69,7 @@ const getHotel = async (req, res, next) => {
         }
 
         if (hotelNames.length === 0) {
-            return next(new HttpError('Could not find hotels for the provided information', 404))
+            throw new Error('No such hotel');
         }
 
         // loop through each date from checkInDate to checkOutDate
@@ -93,7 +94,7 @@ const getHotel = async (req, res, next) => {
 
         // Check again because the code above may have removed all hotels from hotelNames
         if (hotelNames.length === 0) {
-            return next(new HttpError('Could not find hotels for the provided information', 404))
+            throw new Error('No such hotel');
         }    
 
         keyValuePairs = Object.entries(hotelPrices).sort((a, b) => a[1] - b[1]);
@@ -108,7 +109,7 @@ const getHotel = async (req, res, next) => {
     }
 
     catch (e) {
-        console.error(e);
+        res.status(200).json([]);
     } finally {
         await client.close();
     }
